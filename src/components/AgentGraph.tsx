@@ -149,8 +149,10 @@ export const AgentGraph: React.FC<AgentGraphProps> = ({
     });
 
     network.once('stabilizationIterationsDone', () => {
-      network.setOptions({ physics: { enabled: false } });
-      setPhysicsEnabled(false);
+      if (networkRef.current) {
+        networkRef.current.setOptions({ physics: { enabled: false } });
+        setPhysicsEnabled(false);
+      }
     });
 
     return () => {

@@ -75,23 +75,13 @@ export const UploadPage: React.FC<UploadPageProps> = ({
   const loadPreset = async (presetType: 'clean' | 'loops' | 'contradictions') => {
     showLoading('Loading preset trace…');
     try {
-      let sampleData: any;
-      if (presetType === 'clean') {
-        sampleData = await import('../../samples/clean_trace.json');
-      } else if (presetType === 'loops') {
-        sampleData = await import('../../samples/loops_and_ignored.json');
-      } else {
-        sampleData = await import('../../samples/contradictions_and_loss.json');
-      }
-
-      const rawJson = sampleData.default || sampleData;
-      const input = TraceParser.parseJson(JSON.stringify(rawJson));
+      const input = TraceStorage.getPresetInput(presetType);
       const report = await TraceStorage.createTrace(input);
 
       showToast(`Preset trace "${report.trace_name}" loaded!`, 'success');
       onSuccess(report);
     } catch (err: any) {
-      showToast(err.message, 'error');
+      showToast(err.message || 'Failed to load preset', 'error');
     } finally {
       hideLoading();
     }

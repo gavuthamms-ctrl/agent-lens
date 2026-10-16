@@ -466,6 +466,18 @@ export class TraceStorage {
     return this.createTrace(input);
   }
 
+  public static getPresetInput(presetType: 'clean' | 'loops' | 'contradictions'): TraceInputSchema {
+    let trace: TraceInputSchema;
+    if (presetType === 'clean') {
+      trace = SEED_TRACES[2];
+    } else if (presetType === 'loops') {
+      trace = SEED_TRACES[0];
+    } else {
+      trace = SEED_TRACES[1];
+    }
+    return JSON.parse(JSON.stringify(trace));
+  }
+
   public static async evaluateTrace(traceId: number): Promise<EvaluationResult> {
     const items = await this.ensureInitialized();
     const item = items.find(t => t.id === traceId);
@@ -474,7 +486,7 @@ export class TraceStorage {
     }
 
     const gt = item.input.ground_truth;
-    if (!gt || gt.length === 0) {
+    if (!gt || !Array.isArray(gt)) {
       throw new Error(
         `Trace #${traceId} does not have ground-truth defect labels attached. Generate a demo trace or upload a trace with 'ground_truth' array to evaluate accuracy.`
       );

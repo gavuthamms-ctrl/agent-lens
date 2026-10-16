@@ -86,7 +86,7 @@ export class DetectionPipeline {
       })
       .slice(0, 6);
 
-    const hasGroundTruth = Boolean(ground_truth && ground_truth.length > 0);
+    const hasGroundTruth = Boolean(ground_truth && Array.isArray(ground_truth));
 
     return {
       trace_id: traceId,

@@ -286,7 +286,7 @@ export class ExportService {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.target = '_blank';
+    a.download = `agentlens_report_${report.trace_id}.html`;
     a.rel = 'noopener,noreferrer';
     document.body.appendChild(a);
     a.click();

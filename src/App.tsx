@@ -27,6 +27,7 @@ export const App: React.FC = () => {
     return (localStorage.getItem('al-theme') as 'dark' | 'light') || 'dark';
   });
   const [systemMode, setSystemMode] = useState<string>('DETECTING ENGINE…');
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
   const [loadingMsg, setLoadingMsg] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
@@ -112,8 +113,12 @@ export const App: React.FC = () => {
     setCurrentPage('evaluation');
   };
 
-  const handleDeleteTrace = async (traceId: number) => {
-    if (!window.confirm(`Delete trace #${traceId}? This action cannot be undone.`)) return;
+  const handleDeleteTrace = (traceId: number) => {
+    setDeleteTargetId(traceId);
+  };
+
+  const confirmDelete = async (traceId: number) => {
+    setDeleteTargetId(null);
     showLoading('Deleting trace…');
     try {
       await TraceStorage.deleteTrace(traceId);
@@ -236,6 +241,67 @@ export const App: React.FC = () => {
         onClose={() => setDrawerContent(null)}
         onSelectDefect={d => setDrawerContent({ type: 'defect', defect: d })}
       />
+
+      {/* Delete Confirmation Modal */}
+      {deleteTargetId !== null && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: '420px',
+              width: '90%',
+              padding: '24px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '18px',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+                marginBottom: '8px',
+              }}
+            >
+              🗑️ Delete Trace #{deleteTargetId}?
+            </div>
+            <p
+              style={{
+                fontSize: '13px',
+                color: 'var(--text-secondary)',
+                marginBottom: '20px',
+                lineHeight: 1.5,
+              }}
+            >
+              This will permanently remove the trace, analysis report, and defect findings from local storage. This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => setDeleteTargetId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={() => confirmDelete(deleteTargetId)}
+              >
+                Yes, Delete Trace
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Loading Overlay */}
       {loadingMsg && (

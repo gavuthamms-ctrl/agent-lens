@@ -99,6 +99,48 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
         </div>
       </div>
 
+      {!evalResult && (
+        <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+          <div style={{ fontSize: '42px', marginBottom: '12px' }}>📏</div>
+          <div
+            style={{
+              fontSize: '16px',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              marginBottom: '8px',
+            }}
+          >
+            Ready to Evaluate Detector Accuracy
+          </div>
+          <p
+            style={{
+              fontSize: '13px',
+              color: 'var(--text-secondary)',
+              maxWidth: '480px',
+              margin: '0 auto 16px auto',
+              lineHeight: 1.5,
+            }}
+          >
+            Select any stored trace with ground-truth defect annotations from the dropdown above and click{' '}
+            <strong>▶ Run Evaluation</strong> to benchmark precision, recall, and F1 scores against the taxonomy ground truth.
+          </p>
+          <div
+            style={{
+              display: 'inline-flex',
+              gap: '8px',
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span>✓ Precision (TP / TP+FP)</span>
+            <span>•</span>
+            <span>✓ Recall (TP / TP+FN)</span>
+            <span>•</span>
+            <span>✓ F1 Harmonic Mean</span>
+          </div>
+        </div>
+      )}
+
       {evalResult && (
         <div id="eval-results-section">
           {/* Overall Metrics */}
