@@ -1,0 +1,6 @@
+{
+  "name": "AgentLens — Multi-Agent Communication Defect Analyzer",
+  "description": "AgentLens detects and analyses communication defects in multi-agent AI systems using rule-based checks and LLM judging. Visualise agent networks, find defects, and measure detector accuracy.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
