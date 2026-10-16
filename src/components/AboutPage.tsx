@@ -37,7 +37,7 @@ export const AboutPage: React.FC = () => {
               <strong>Rule-Based Detector</strong> — Cosine similarity for loop detection, regex-based unanswered request tracking, and structural protocol anomaly checks.
             </li>
             <li>
-              <strong>LLM Judge</strong> — Semantic analysis evaluating ambiguity, role boundary violations, tech-stack contradictions, and hallucinations.
+              <strong>LLM Judge (Google Gemini 3.8 Flash)</strong> — Deep semantic analysis evaluating prompt ambiguity, role boundary violations, tech-stack contradictions, and hallucinations.
             </li>
             <li>
               <strong>Merge & Deduplicate</strong> — Matched findings become hybrid defects with boosted confidence; unique findings from each source are preserved.

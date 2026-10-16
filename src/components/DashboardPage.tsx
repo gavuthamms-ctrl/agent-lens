@@ -5,6 +5,7 @@ import { DefectsByTypeChart, DefectsBySeverityChart, DefectsByAgentChart } from 
 interface DashboardPageProps {
   traces: TraceSummaryItem[];
   latestReport: TraceReport | null;
+  allReports?: TraceReport[];
   theme: 'dark' | 'light';
   onRefresh: () => void;
   onOpenTrace: (traceId: number) => void;
@@ -17,6 +18,7 @@ interface DashboardPageProps {
 export const DashboardPage: React.FC<DashboardPageProps> = ({
   traces,
   latestReport,
+  allReports = [],
   theme,
   onRefresh,
   onOpenTrace,
@@ -33,12 +35,24 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       ? Math.round(traces.reduce((acc, t) => acc + (t.health_score ?? 100), 0) / totalTraces)
       : 100;
 
-  // Aggregate charts data or use latest report
-  const typeCounts = latestReport ? latestReport.defect_counts_by_type : {};
-  const severityCounts = latestReport
-    ? latestReport.defect_counts_by_severity
-    : { critical: 0, high: 0, medium: 0, low: 0 };
-  const agentCounts = latestReport ? latestReport.defect_counts_by_agent : {};
+  // Aggregate charts data across all stored reports, or fallback to latestReport
+  const typeCounts: Record<string, number> = {};
+  const severityCounts: Record<string, number> = { critical: 0, high: 0, medium: 0, low: 0 };
+  const agentCounts: Record<string, number> = {};
+
+  const sourceReports = allReports.length > 0 ? allReports : latestReport ? [latestReport] : [];
+
+  for (const r of sourceReports) {
+    for (const [t, cnt] of Object.entries(r.defect_counts_by_type)) {
+      typeCounts[t] = (typeCounts[t] || 0) + cnt;
+    }
+    for (const [s, cnt] of Object.entries(r.defect_counts_by_severity)) {
+      severityCounts[s] = (severityCounts[s] || 0) + cnt;
+    }
+    for (const [a, cnt] of Object.entries(r.defect_counts_by_agent)) {
+      agentCounts[a] = (agentCounts[a] || 0) + cnt;
+    }
+  }
 
   return (
     <div className="tab-page active">

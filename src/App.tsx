@@ -19,12 +19,14 @@ interface ToastItem {
 export const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageId>('dashboard');
   const [traces, setTraces] = useState<TraceSummaryItem[]>([]);
+  const [allReports, setAllReports] = useState<TraceReport[]>([]);
   const [currentReport, setCurrentReport] = useState<TraceReport | null>(null);
   const [selectedEvalTraceId, setSelectedEvalTraceId] = useState<number | null>(null);
   const [drawerContent, setDrawerContent] = useState<DrawerContent>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('al-theme') as 'dark' | 'light') || 'dark';
   });
+  const [systemMode, setSystemMode] = useState<string>('DETECTING ENGINE…');
   const [loadingMsg, setLoadingMsg] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
@@ -32,6 +34,20 @@ export const App: React.FC = () => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('al-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    import('./services/llmJudge').then(({ LLMJudge }) => {
+      LLMJudge.getEngineStatus().then(status => {
+        if (status.hasApiKey) {
+          setSystemMode('GEMINI 3.8 FLASH ACTIVE');
+        } else {
+          setSystemMode('OFFLINE HEURISTIC ENGINE');
+        }
+      }).catch(() => {
+        setSystemMode('OFFLINE HEURISTIC ENGINE');
+      });
+    });
+  }, []);
 
   const showToast = (msg: string, type: 'success' | 'error' | 'info' = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -53,9 +69,10 @@ export const App: React.FC = () => {
     try {
       const list = await TraceStorage.listTraces();
       setTraces(list);
-      if (list.length > 0 && !currentReport) {
-        const firstReport = await TraceStorage.getTraceReport(list[0].id);
-        setCurrentReport(firstReport);
+      const reports = await TraceStorage.getAllReports();
+      setAllReports(reports);
+      if (reports.length > 0 && !currentReport) {
+        setCurrentReport(reports[0]);
       }
     } catch (err: any) {
       showToast(err.message || 'Failed to load traces', 'error');
@@ -146,7 +163,7 @@ export const App: React.FC = () => {
       <Sidebar
         currentPage={currentPage}
         onNavigate={handleNavigate}
-        systemMode="OFFLINE HEURISTIC ENGINE"
+        systemMode={systemMode}
       />
 
       <div className="main-wrapper">
@@ -163,6 +180,7 @@ export const App: React.FC = () => {
             <DashboardPage
               traces={traces}
               latestReport={currentReport}
+              allReports={allReports}
               theme={theme}
               onRefresh={loadTraces}
               onOpenTrace={handleOpenTrace}

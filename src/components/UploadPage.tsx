@@ -75,80 +75,18 @@ export const UploadPage: React.FC<UploadPageProps> = ({
   const loadPreset = async (presetType: 'clean' | 'loops' | 'contradictions') => {
     showLoading('Loading preset trace…');
     try {
-      let report: TraceReport;
+      let sampleData: any;
       if (presetType === 'clean') {
-        report = await TraceStorage.generateDemo({ clean: true });
+        sampleData = await import('../../samples/clean_trace.json');
       } else if (presetType === 'loops') {
-        const input = TraceParser.parseJson(
-          JSON.stringify({
-            trace_name: 'Payment Gateway Integration with Feedback Loops',
-            task: 'Integrate Stripe webhook event processing and idempotency keys',
-            agents: [
-              { name: 'Planner', role: 'Lead Architect' },
-              { name: 'Coder', role: 'Backend Engineer' },
-              { name: 'Reviewer', role: 'Security Auditor' },
-              { name: 'Tester', role: 'QA Engineer' },
-            ],
-            messages: [
-              {
-                id: 1,
-                sender: 'Planner',
-                receiver: 'Coder',
-                content: 'Please implement Stripe webhook receiver for payment_intent.succeeded with HMAC SHA256.',
-              },
-              {
-                id: 2,
-                sender: 'Coder',
-                receiver: 'Reviewer',
-                content: 'Can you please verify if the Stripe webhook signing secret is properly configured in the test vault?',
-              },
-              {
-                id: 3,
-                sender: 'Reviewer',
-                receiver: 'Coder',
-                content: 'Can you please verify if the Stripe webhook signing secret is properly configured in the test vault?',
-              },
-              {
-                id: 4,
-                sender: 'Coder',
-                receiver: 'Reviewer',
-                content: 'Can you please verify if the Stripe webhook signing secret is properly configured in the test vault?',
-              },
-              {
-                id: 5,
-                sender: 'Reviewer',
-                receiver: 'Coder',
-                content: 'Please provide the complete idempotency key replay test suite and coverage reports immediately?',
-              },
-            ],
-            ground_truth: [
-              {
-                id: 'gt-loop-2-3-4',
-                type: 'REDUNDANT_LOOP',
-                severity: 'high',
-                message_ids: [2, 3, 4],
-                agents: ['Coder', 'Reviewer'],
-                explanation: 'Ping-pong loop repeating identical queries 3 times without resolution.',
-                suggested_fix: 'Add loop guard and state machine synchronization.',
-                confidence: 1.0,
-              },
-              {
-                id: 'gt-ignored-5',
-                type: 'IGNORED_REQUEST',
-                severity: 'high',
-                message_ids: [5],
-                agents: ['Reviewer', 'Coder'],
-                explanation: 'Reviewer requested test suite but Coder never responded.',
-                suggested_fix: 'Require agents to acknowledge pending requests.',
-                confidence: 1.0,
-              },
-            ],
-          })
-        );
-        report = await TraceStorage.createTrace(input);
+        sampleData = await import('../../samples/loops_and_ignored.json');
       } else {
-        report = await TraceStorage.generateDemo({ clean: false });
+        sampleData = await import('../../samples/contradictions_and_loss.json');
       }
+
+      const rawJson = sampleData.default || sampleData;
+      const input = TraceParser.parseJson(JSON.stringify(rawJson));
+      const report = await TraceStorage.createTrace(input);
 
       showToast(`Preset trace "${report.trace_name}" loaded!`, 'success');
       onSuccess(report);

@@ -4,13 +4,55 @@ function generateId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).substring(2, 8)}`;
 }
 
+export interface EngineStatus {
+  status: string;
+  engine: string;
+  model: string;
+  hasApiKey: boolean;
+}
+
 export class LLMJudge {
+  public static async getEngineStatus(): Promise<EngineStatus> {
+    try {
+      const res = await fetch('/api/status');
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback if offline
+    }
+    return {
+      status: 'ok',
+      engine: 'Heuristic Engine',
+      model: 'offline-heuristic',
+      hasApiKey: false,
+    };
+  }
+
   public async judgeTrace(
     task: string,
     agents: AgentSchema[],
     messages: MessageSchema[]
   ): Promise<DefectSchema[]> {
     if (!messages || messages.length === 0) return [];
+
+    try {
+      const res = await fetch('/api/judge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task, agents, messages }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.source === 'gemini-3.8-flash' && Array.isArray(data.defects) && data.defects.length > 0) {
+          return data.defects;
+        }
+      }
+    } catch (err) {
+      console.warn('API judge request failed, falling back to heuristic engine:', err);
+    }
+
     return this.heuristicJudge(task, agents, messages);
   }
 

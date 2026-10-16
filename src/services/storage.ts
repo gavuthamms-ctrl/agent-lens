@@ -406,6 +406,11 @@ export class TraceStorage {
       .sort((a, b) => b.id - a.id);
   }
 
+  public static async getAllReports(): Promise<TraceReport[]> {
+    const items = await this.ensureInitialized();
+    return items.map(item => item.report);
+  }
+
   public static async getTraceReport(traceId: number): Promise<TraceReport> {
     const items = await this.ensureInitialized();
     const item = items.find(t => t.id === traceId);
